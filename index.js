@@ -12,43 +12,37 @@ const users = []
 app.post('/sign-up', (req, res) => { 
     const { email , password } = req.body;
     if (!email || !password) {
-        res.status(400).json({message: 'Email and password are required!' })
-        return
+        return res.status(400).json({message: 'Email and password are required!' })
     }
     if (password.length < 8) {
-        res.status(400).json({message : 'Password length should be minimum 8 symbols!!' })
-        return
+        return res.status(400).json({message : 'Password length should be minimum 8 symbols!!' })
     }
     if(users.find((user) => user.email === email)) {
-        res.status(400).json({message: 'User with this email already exists!' })
-        return
+       return res.status(400).json({message: 'User with this email already exists!' })
     }
     users.push({
         email, 
         password : encodePassword(password)
     })
-    res.status(201).json({message: 'Registered successfully!' })
+    return res.status(201).json({message: 'Registered successfully!' })
 })
 
 app.post('/sign-in', (req, res) => {
     const { email , password } = req.body;
     if (!email || !password) {
-        res.status(400).json({message: 'Email and password are required!' })
-        return
+        return res.status(400).json({message: 'Email and password are required!' })
     }
     const user = users.find(user => user.email === email);
     if (!user) {
-        res.status(401).json({ message: 'User not found!' });
-        return;
+        return res.status(401).json({ message: 'User not found!' });
     }
-    
+
     if (user.password !== encodePassword(password)) {
-        res.status(401).json({ message: 'Invalid password!' });
-        return;
+       return res.status(401).json({ message: 'Invalid password!' });
     }
     
     const token = generateToken(email);
-    res.status(200).json({ message: 'Login successful!', token, user: { email }
+    return res.status(200).json({ message: 'Login successful!', token, user: { email }
     })
 })
 
