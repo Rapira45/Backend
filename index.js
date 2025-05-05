@@ -48,7 +48,7 @@ app.post('/sign-in', (req, res) => {
     }
     
     const token = generateToken(email);
-    res.json({ message: 'Login successful!', token, user: { email }
+    res.status(200).json({ message: 'Login successful!', token, user: { email }
     })
 })
 
