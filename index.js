@@ -11,9 +11,10 @@ let users = []
 
 app.post('/sign-up', (req, res) => { 
     const { email , password } = req.body;
-    if (!email || !password) {
+     if (!email || !password) {
         return res.status(400).json({message: 'Email and password are required!' })
     }
+    console.log({email, password})
     if (password.length < 8) {
         return res.status(400).json({message : 'Password length should be minimum 8 symbols!!' })
     }
@@ -49,3 +50,4 @@ app.post('/sign-in', (req, res) => {
 app.listen(3000, () => {
     console.log('Server is running on port http://localhost:3000')
 })
+
