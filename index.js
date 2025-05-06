@@ -7,7 +7,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-const users = []
+let users = []
 
 app.post('/sign-up', (req, res) => { 
     const { email , password } = req.body;
