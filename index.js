@@ -22,6 +22,7 @@ app.post('/sign-up', (req, res) => {
        return res.status(400).json({message: 'User with this email already exists!' })
     }
     users.push({
+        id:Date.now(),
         email, 
         password : encodePassword(password)
     })
@@ -42,8 +43,7 @@ app.post('/sign-in', (req, res) => {
        return res.status(401).json({ message: 'Invalid password!' });
     }
     
-    const token = generateToken(email);
-    return res.status(200).json({ message: 'Login successful!', token, user: { email }
+    return res.status(200).json({ message: 'Login successful!',  user: {id: user.id, email: user.email }
     })
 })
 
