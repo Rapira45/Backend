@@ -46,43 +46,22 @@ app.post('/sign-in', (req, res) => {
     })
 })
 
-let upgrades = {
-    1: { id: 1, name: "Click Accelerator", description: "speed of earning x10", price: 49000 },
-    2: { id: 2, name: "Coin Multiplier", description: "Coins per click x10", price: 49000 },
-    3: { id: 3, name: "Power Tap", description: "Coins per click +2", price: 10000 },
-    4: { id: 4, name: "Golden Touch", description: "Random bonus on click", price: 48000 },
-    5: { id: 5, name: "Coin Stream", description: "passive income x10", price: 49000 },
-    6: { id: 6, name: "Mining Drone", description: "Automated clicks for 1 min", price: 100000 }
-};
-
-function generateId() {
-    const ids = Object.keys(upgrades).map(Number);
-    return ids.length > 0 ? Math.max(...ids) + 1 : 1;
-}
-
-function validateUpgrade(upgrade) {
-    const errors = [];
-    
-    if (!upgrade.name || typeof upgrade.name !== 'string') {
-        errors.push("Name is required and must be a string");
-    }
-    if (!upgrade.description || typeof upgrade.description !== 'string') {
-        errors.push("Description is required and must be a string");
-    }
-    if (typeof upgrade.price !== 'number' || upgrade.price < 0) {
-        errors.push("Price must be a positive number");
-    }
-    
-    return errors;
-}
+const upgrades = [
+    { id: 1, name: "Click Accelerator", description: "speed of earning x10", price: 49000 },
+    { id: 2, name: "Coin Multiplier", description: "Coins per click x10", price: 49000 },
+    { id: 3, name: "Power Tap", description: "Coins per click +2", price: 10000 },
+    { id: 4, name: "Golden Touch", description: "Random bonus on click", price: 48000 },
+    { id: 5, name: "Coin Stream", description: "passive income x10", price: 49000 },
+    { id: 6, name: "Mining Drone", description: "Automated clicks for 1 min", price: 100000 }
+];
 
 app.get('/upgrades', (req, res) => {
-    res.json(Object.values(upgrades));
+    res.json(upgrades);
 });
 
 app.get('/upgrades/:id', (req, res) => {
-    const id = req.params.id;
-    const upgrade = upgrades[id];
+    const id = parseInt(req.params.id);
+    const upgrade = upgrades.find(u => u.id === id);
     
     if (!upgrade) {
         return res.status(404).json({ error: "Upgrade not found" });
@@ -97,21 +76,22 @@ app.post('/upgrades', (req, res) => {
         return res.status(400).json({ errors });
     }
     
-    const id = generateId();
-    upgrades[id] = {
-        id,
+    const newUpgrade = {
+        id: generateId(),
         name: req.body.name,
         description: req.body.description,
         price: req.body.price
     };
     
-    res.status(201).json(upgrades[id]);
+    upgrades.push(newUpgrade);
+    res.status(201).json(newUpgrade);
 });
 
 app.put('/upgrades/:id', (req, res) => {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+    const index = upgrades.findIndex(u => u.id === id);
     
-    if (!upgrades[id]) {
+    if (index === -1) {
         return res.status(404).json({ error: "Upgrade not found" });
     }
     
@@ -120,27 +100,28 @@ app.put('/upgrades/:id', (req, res) => {
         return res.status(400).json({ errors });
     }
     
-    upgrades[id] = {
+    const updatedUpgrade = {
         id,
         name: req.body.name,
         description: req.body.description,
         price: req.body.price
     };
     
-    res.json(upgrades[id]);
+    upgrades[index] = updatedUpgrade;
+    res.json(updatedUpgrade);
 });
 
 app.delete('/upgrades/:id', (req, res) => {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+    const index = upgrades.findIndex(u => u.id === id);
     
-    if (!upgrades[id]) {
+    if (index === -1) {
         return res.status(404).json({ error: "Upgrade not found" });
     }
     
-    delete upgrades[id];
+    upgrades = upgrades.filter(u => u.id !== id);
     res.status(204).end();
 });
-
 app.listen(3000, () => {
     console.log('Server is running on port http://localhost:3000')
 })
