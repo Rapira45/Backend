@@ -46,14 +46,34 @@ app.post('/sign-in', (req, res) => {
     })
 })
 
-const upgrades = [
-    { id: 1, name: "Click Accelerator", description: "speed of earning x10", price: 49000 },
-    { id: 2, name: "Coin Multiplier", description: "Coins per click x10", price: 49000 },
+let upgrades = [
+    { id: 1, name: "Click Accelerator", description: "speed of earning x10", price: 40000 },
+    { id: 2, name: "Coin Multiplier", description: "Coins per click x10", price: 40000 },
     { id: 3, name: "Power Tap", description: "Coins per click +2", price: 10000 },
-    { id: 4, name: "Golden Touch", description: "Random bonus on click", price: 48000 },
-    { id: 5, name: "Coin Stream", description: "passive income x10", price: 49000 },
+    { id: 4, name: "Golden Touch", description: "Random bonus on click", price: 40000 },
+    { id: 5, name: "Coin Stream", description: "passive income x10", price: 40000 },
     { id: 6, name: "Mining Drone", description: "Automated clicks for 1 min", price: 100000 }
 ];
+
+function generateId() {
+    return upgrades.length > 0 ? Math.max(...upgrades.map(u => u.id)) + 1 : 1;
+}
+
+function validateUpgrade(upgrade) {
+    const errors = [];
+    
+    if (!upgrade.name || typeof upgrade.name !== 'string') {
+        errors.push("Name is required and must be a string");
+    }
+    if (!upgrade.description || typeof upgrade.description !== 'string') {
+        errors.push("Description is required and must be a string");
+    }
+    if (typeof upgrade.price !== 'number' || upgrade.price < 0) {
+        errors.push("Price must be a positive number");
+    }
+    
+    return errors;
+}
 
 app.get('/upgrades', (req, res) => {
     res.json(upgrades);
@@ -125,4 +145,5 @@ app.delete('/upgrades/:id', (req, res) => {
 app.listen(3000, () => {
     console.log('Server is running on port http://localhost:3000')
 })
+
 
