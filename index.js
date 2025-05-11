@@ -148,16 +148,28 @@ app.delete('/upgrades/:id', (req, res) => {
     upgrades = upgrades.filter(u => u.id !== id);
     res.status(204).end();
 });
+
+app.use((req, res, next) => {
+    const userId = req.headers['user-id'];
+    
+    if (!userId) {
+        return res.status(401).json({ error: "Unauthorized!" });
+    }
+    
+    const user = users.find(u => u.id === parseInt(userId));
+    if (!user) {
+        return res.status(404).json({ error: "User not found!" });
+    }
+    
+    req.user = user;
+    next();
+});
+
 app.post('/click', (req, res) => {
     try {
         req.user.balance += req.user.coinsPerClick;
-        res.json({
-            balance: req.user.balance,
-            coinsPerClick: req.user.coinsPerClick,
-            passiveIncomePerSecond: req.user.passiveIncomePerSecond
-        });
+        res.json({ balance: req.user.balance });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
@@ -165,13 +177,8 @@ app.post('/click', (req, res) => {
 app.post('/passive-income', (req, res) => {
     try {
         req.user.balance += req.user.passiveIncomePerSecond;
-        res.json({
-            balance: req.user.balance,
-            coinsPerClick: req.user.coinsPerClick,
-            passiveIncomePerSecond: req.user.passiveIncomePerSecond
-        });
+        res.json({ balance: req.user.balance });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
