@@ -13,20 +13,26 @@ app.post('/sign-up', (req, res) => {
      if (!email || !password) {
         return res.status(400).json({message: 'Email and password are required!' })
     }
-    console.log({email, password})
     if (password.length < 8) {
         return res.status(400).json({message : 'Password length should be minimum 8 symbols!!' })
     }
     if(users.find((user) => user.email === email)) {
        return res.status(400).json({message: 'User with this email already exists!' })
     }
-    users.push({
+    const newUser = {
         id:Date.now(),
         email, 
-        password : encodePassword(password)
-    })
-    return res.status(201).json({message: 'Registered successfully!' })
-})
+        password : encodePassword(password),
+        balance: 0,
+        coinsPerClick: 1,
+        passiveIncomePerSecond: 1
+    }
+    users.push(newUser)
+    res.status(201).json({
+    message: "Registered succesfully!",
+    user: { id: newUser.id, email: newUser.email, balance: newUser.balance, coinsPerClick: newUser.coinsPerClick, passiveIncomePerSecond: newUser.passiveIncomePerSecond}
+});
+});
 
 app.post('/sign-in', (req, res) => {
     const { email , password } = req.body;
@@ -42,7 +48,7 @@ app.post('/sign-in', (req, res) => {
        return res.status(401).json({ message: 'Invalid password!' });
     }
     
-    return res.status(200).json({ message: 'Login successful!',  user: {id: user.id, email: user.email }
+    return res.status(200).json({ message: 'Login successful!',  user: {id: user.id, email: user.email, balance: user.balance, coinsPerClick: user.coinsPerClick, passiveIncomePerSecond: user.passiveIncomePerSecond}
     })
 })
 
@@ -141,6 +147,33 @@ app.delete('/upgrades/:id', (req, res) => {
     
     upgrades = upgrades.filter(u => u.id !== id);
     res.status(204).end();
+});
+app.post('/click', (req, res) => {
+    try {
+        req.user.balance += req.user.coinsPerClick;
+        res.json({
+            balance: req.user.balance,
+            coinsPerClick: req.user.coinsPerClick,
+            passiveIncomePerSecond: req.user.passiveIncomePerSecond
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post('/passive-income', (req, res) => {
+    try {
+        req.user.balance += req.user.passiveIncomePerSecond;
+        res.json({
+            balance: req.user.balance,
+            coinsPerClick: req.user.coinsPerClick,
+            passiveIncomePerSecond: req.user.passiveIncomePerSecond
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 app.listen(3000, () => {
     console.log('Server is running on port http://localhost:3000')
