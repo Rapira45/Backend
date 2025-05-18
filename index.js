@@ -33,7 +33,7 @@ app.post('/sign-up', (req, res) => {
     user: { id: newUser.id, email: newUser.email, balance: newUser.balance, coinsPerClick: newUser.coinsPerClick, passiveIncomePerSecond: newUser.passiveIncomePerSecond}
 });
 });
-
+ 
 app.post('/sign-in', (req, res) => {
     const { email , password } = req.body;
     if (!email || !password) {
@@ -53,12 +53,12 @@ app.post('/sign-in', (req, res) => {
 })
 
 let upgrades = [
-    { id: 1, name: "Click Accelerator", description: "speed of earning x10", price: 40000 },
-    { id: 2, name: "Coin Multiplier", description: "Coins per click x10", price: 40000 },
-    { id: 3, name: "Power Tap", description: "Coins per click +2", price: 10000 },
-    { id: 4, name: "Golden Touch", description: "Random bonus on click", price: 40000 },
-    { id: 5, name: "Coin Stream", description: "passive income x10", price: 40000 },
-    { id: 6, name: "Mining Drone", description: "Automated clicks for 1 min", price: 100000 }
+    { id: "click-accelerator", name: "Click Accelerator", description: "Speed of earning x10", price: 40000, type: "multiplyClick", value: 10 },
+    { id: "coin-multiplier", name: "Coin Multiplier", description: "Coins per click x10", price: 40000, type: "multiplyClick", value: 10 },
+    { id: "power-tap", name: "Power Tap", description: "Coins per click +2", price: 100, type: "addClick", value: 2 },
+    { id: "golden-touch", name: "Golden Touch", description: "Random bonus on click", price: 40000, type: "multiplyClick", value: 5},
+    { id: "coin-stream", name: "Coin Stream", description: "passive income x10", price: 40000, type: "multiplyPassive", value: 10 },
+    { id: "mining-drone", name: "Mining Drone", description: "Automated clicks for 1 min", price: 100000, type: "addPassive", value: 50 }
 ];
 
 function generateId() {
@@ -106,7 +106,8 @@ app.post('/upgrades', (req, res) => {
         id: generateId(),
         name: req.body.name,
         description: req.body.description,
-        price: req.body.price
+        price: req.body.price,
+        value: req.body.value
     };
     
     upgrades.push(newUpgrade);
@@ -182,6 +183,59 @@ app.post('/passive-income', (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+app.post('/buy-upgrade', (req, res) => {
+     try {
+        const userId = Number(req.body.userId);
+        const upgradeId = req.body.upgradeId;
+
+        const user = users.find(u => u.id === userId);
+        const upgrade = upgrades.find(u => u.id === upgradeId);
+
+        if (!upgrade || !user) {
+            return res.status(404).json({ error: "Not found" });
+        }
+        
+        if (user.purchasedUpgrades?.includes(upgradeId)) {
+            return res.status(400).json({ error: "Upgrade already purchased" });
+        }
+        
+        if (user.balance < upgrade.price) {
+            return res.status(400).json({ error: "Not enough money" });
+        }
+        
+        user.balance -= upgrade.price;
+        switch (upgrade.type) {
+            case 'multiplyClick':
+                user.coinsPerClick *= upgrade.value;
+                break;
+            case 'addClick':
+                user.coinsPerClick += upgrade.value;
+                break;
+            case 'multiplyPassive':
+                user.passiveIncomePerSecond *= upgrade.value;
+                break;
+            case 'addPassive':
+                user.passiveIncomePerSecond += upgrade.value;
+                break;
+            default:
+                return res.status(400).json({ error: "Invalid type effect" });
+        }
+        
+        user.purchasedUpgrades = user.purchasedUpgrades || [];
+        user.purchasedUpgrades.push(upgradeId);
+        
+        res.json({
+            balance: user.balance,
+            coinsPerClick: user.coinsPerClick,
+            purchasedUpgrades: user.purchasedUpgrades
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server is running on port http://localhost:3000')
 })
